@@ -1,7 +1,7 @@
-package com.grepp.backend5.product.adapter.out.persistence;
+package com.grepp.backend5.product.infrastructure.persistence;
 
-import com.grepp.backend5.product.application.port.out.ProductPersistencePort;
-import com.grepp.backend5.product.domain.Product;
+import com.grepp.backend5.product.domain.model.Product;
+import com.grepp.backend5.product.domain.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -9,11 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class ProductPersistenceAdapter implements ProductPersistencePort {
+public class ProductRepositoryAdapter implements ProductRepository {
 
     private final ProductJpaRepository productJpaRepository;
 
-    public ProductPersistenceAdapter(ProductJpaRepository productJpaRepository) {
+    public ProductRepositoryAdapter(ProductJpaRepository productJpaRepository) {
         this.productJpaRepository = productJpaRepository;
     }
 

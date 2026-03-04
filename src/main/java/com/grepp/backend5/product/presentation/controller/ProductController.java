@@ -1,7 +1,12 @@
-package com.grepp.backend5.product.adapter.in.web;
+package com.grepp.backend5.product.presentation.controller;
 
-import com.grepp.backend5.product.application.port.in.ProductUseCase;
-import com.grepp.backend5.product.domain.Product;
+import com.grepp.backend5.product.application.input.CreateProductInput;
+import com.grepp.backend5.product.application.input.UpdateProductInput;
+import com.grepp.backend5.product.application.usecase.ProductUseCase;
+import com.grepp.backend5.product.domain.model.Product;
+import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
+import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
+import com.grepp.backend5.product.presentation.dto.response.ProductResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,23 +45,35 @@ public class ProductController {
     @Operation(summary = "상품 생성", description = "신규 상품을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "생성 성공",
-                    content = @Content(schema = @Schema(implementation = Product.class))),
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "400", description = "요청 값 오류")
     })
-    public ResponseEntity<Product> create(@RequestBody Product request) {
-        Product response = productUseCase.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ProductResponse> create(
+            @Parameter(description = "요청자 UUID")
+            @RequestHeader("X-Actor-Id") UUID actorId,
+            @Valid @RequestBody CreateProductRequest request
+    ) {
+        Product created = productUseCase.create(new CreateProductInput(
+                request.sellerId(),
+                request.name(),
+                request.description(),
+                request.price(),
+                request.stock(),
+                request.status(),
+                actorId
+        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.from(created));
     }
 
     @GetMapping("/{productId}")
     @Operation(summary = "상품 단건 조회", description = "상품 ID로 상품 정보를 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
-                    content = @Content(schema = @Schema(implementation = Product.class))),
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
-    public Product getById(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
-        return productUseCase.getById(productId);
+    public ProductResponse getById(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
+        return ProductResponse.from(productUseCase.getById(productId));
     }
 
     @GetMapping
@@ -62,20 +81,33 @@ public class ProductController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
-    public List<Product> getAll() {
-        return productUseCase.getAll();
+    public List<ProductResponse> getAll() {
+        return productUseCase.getAll().stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 
     @PutMapping("/{productId}")
     @Operation(summary = "상품 수정", description = "상품 정보를 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
-                    content = @Content(schema = @Schema(implementation = Product.class))),
+                    content = @Content(schema = @Schema(implementation = ProductResponse.class))),
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
-    public Product update(@Parameter(description = "상품 UUID") @PathVariable UUID productId,
-                          @RequestBody Product request) {
-        return productUseCase.update(productId, request);
+    public ProductResponse update(
+            @Parameter(description = "상품 UUID") @PathVariable UUID productId,
+            @Parameter(description = "요청자 UUID") @RequestHeader("X-Actor-Id") UUID actorId,
+            @Valid @RequestBody UpdateProductRequest request
+    ) {
+        Product updated = productUseCase.update(productId, new UpdateProductInput(
+                request.name(),
+                request.description(),
+                request.price(),
+                request.stock(),
+                request.status(),
+                actorId
+        ));
+        return ProductResponse.from(updated);
     }
 
     @DeleteMapping("/{productId}")
