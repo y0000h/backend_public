@@ -1,7 +1,7 @@
-package com.grepp.backend5.product.controller;
+package com.grepp.backend5.product.adapter.in.web;
 
+import com.grepp.backend5.product.application.port.in.ProductUseCase;
 import com.grepp.backend5.product.domain.Product;
-import com.grepp.backend5.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,7 +11,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +28,10 @@ import java.util.UUID;
 @Tag(name = "Product", description = "상품 CRUD API")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductUseCase productUseCase;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public ProductController(ProductUseCase productUseCase) {
+        this.productUseCase = productUseCase;
     }
 
     @PostMapping
@@ -35,7 +42,7 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "요청 값 오류")
     })
     public ResponseEntity<Product> create(@RequestBody Product request) {
-        Product response = productService.create(request);
+        Product response = productUseCase.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -47,7 +54,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
     public Product getById(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
-        return productService.getById(productId);
+        return productUseCase.getById(productId);
     }
 
     @GetMapping
@@ -56,7 +63,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     public List<Product> getAll() {
-        return productService.getAll();
+        return productUseCase.getAll();
     }
 
     @PutMapping("/{productId}")
@@ -68,7 +75,7 @@ public class ProductController {
     })
     public Product update(@Parameter(description = "상품 UUID") @PathVariable UUID productId,
                           @RequestBody Product request) {
-        return productService.update(productId, request);
+        return productUseCase.update(productId, request);
     }
 
     @DeleteMapping("/{productId}")
@@ -78,7 +85,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
     public ResponseEntity<Void> delete(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
-        productService.delete(productId);
+        productUseCase.delete(productId);
         return ResponseEntity.noContent().build();
     }
 }
