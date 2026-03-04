@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.grepp'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+description = '백엔드 심화 5기 학습용 프로젝트'
 
 java {
 	toolchain {
@@ -19,6 +19,12 @@ repositories {
 }
 
 dependencies {
+    //web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
