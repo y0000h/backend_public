@@ -1,8 +1,6 @@
 package com.grepp.backend5.product.service;
 
 import com.grepp.backend5.product.domain.Product;
-import com.grepp.backend5.product.dto.ProductCreateRequest;
-import com.grepp.backend5.product.dto.ProductUpdateRequest;
 import com.grepp.backend5.product.repository.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,15 +22,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product create(ProductCreateRequest request) {
+    public Product create(Product request) {
         Product product = Product.create(
-                toUuid(request.sellerId(), "sellerId"),
-                request.name(),
-                request.description(),
-                request.price(),
-                request.stock(),
-                request.status(),
-                toUuid(request.creatorId(), "creatorId")
+                request.getSellerId(),
+                request.getName(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getStock(),
+                request.getStatus(),
+                request.getRegId()
         );
         return productRepository.save(product);
     }
@@ -50,15 +48,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Product update(UUID productId, ProductUpdateRequest request) {
+    public Product update(UUID productId, Product request) {
         Product product = findByIdOrThrow(productId);
         product.update(
-                request.name(),
-                request.description(),
-                request.price(),
-                request.stock(),
-                request.status(),
-                toUuid(request.modifierId(), "modifierId")
+                request.getName(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getStock(),
+                request.getStatus(),
+                request.getModifyId()
         );
         return product;
     }
@@ -73,13 +71,5 @@ public class ProductServiceImpl implements ProductService {
     private Product findByIdOrThrow(UUID productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-    }
-
-    private UUID toUuid(String value, String fieldName) {
-        try {
-            return UUID.fromString(value);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, fieldName + " must be valid UUID");
-        }
     }
 }

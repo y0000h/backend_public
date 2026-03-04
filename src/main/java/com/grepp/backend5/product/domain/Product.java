@@ -7,8 +7,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.repository.Modifying;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "\"product\"", schema = "public")
 public class Product {
 
@@ -50,7 +51,6 @@ public class Product {
     private UUID modifyId;
 
     @Column(name = "modify_dt", nullable = false)
-    @LastModifiedDate
     private LocalDateTime modifyDt;
 
     protected Product() {

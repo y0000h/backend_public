@@ -1,8 +1,6 @@
 package com.grepp.backend5.product.controller;
 
 import com.grepp.backend5.product.domain.Product;
-import com.grepp.backend5.product.dto.ProductCreateRequest;
-import com.grepp.backend5.product.dto.ProductUpdateRequest;
 import com.grepp.backend5.product.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> create(@RequestBody ProductCreateRequest request) {
+    public ResponseEntity<Product> create(@RequestBody Product request) {
         Product response = productService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -39,7 +37,7 @@ public class ProductController {
 
     @PutMapping("/{productId}")
     public Product update(@PathVariable UUID productId,
-                          @RequestBody ProductUpdateRequest request) {
+                          @RequestBody Product request) {
         return productService.update(productId, request);
     }
 
