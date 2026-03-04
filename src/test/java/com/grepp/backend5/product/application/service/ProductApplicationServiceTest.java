@@ -1,10 +1,10 @@
 package com.grepp.backend5.product.application.service;
 
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
-import com.grepp.backend5.product.application.input.CreateProductInput;
-import com.grepp.backend5.product.application.input.UpdateProductInput;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.domain.repository.ProductRepository;
+import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
+import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,19 +35,18 @@ class ProductApplicationServiceTest {
     void createSetsActorIdToRegIdAndModifyId() {
         UUID actorId = UUID.randomUUID();
 
-        CreateProductInput input = new CreateProductInput(
+        CreateProductRequest request = new CreateProductRequest(
                 UUID.randomUUID(),
                 "Macbook Pro 14",
                 "M3 chip",
                 new BigDecimal("2590000.00"),
                 10,
-                "ACTIVE",
-                actorId
+                "ACTIVE"
         );
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product created = productApplicationService.create(input);
+        Product created = productApplicationService.create(request, actorId);
 
         assertThat(created.getRegId()).isEqualTo(actorId);
         assertThat(created.getModifyId()).isEqualTo(actorId);
@@ -99,18 +98,17 @@ class ProductApplicationServiceTest {
         );
         existing.setId(productId);
 
-        UpdateProductInput input = new UpdateProductInput(
+        UpdateProductRequest request = new UpdateProductRequest(
                 "New Product",
                 "New",
                 new BigDecimal("300.00"),
                 5,
-                "ACTIVE",
-                actorId
+                "ACTIVE"
         );
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(existing));
 
-        Product updated = productApplicationService.update(productId, input);
+        Product updated = productApplicationService.update(productId, request, actorId);
 
         assertThat(updated.getName()).isEqualTo("New Product");
         assertThat(updated.getDescription()).isEqualTo("New");

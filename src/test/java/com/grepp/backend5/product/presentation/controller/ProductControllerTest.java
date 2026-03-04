@@ -3,7 +3,6 @@ package com.grepp.backend5.product.presentation.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grepp.backend5.common.exception.GlobalExceptionHandler;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
-import com.grepp.backend5.product.application.input.CreateProductInput;
 import com.grepp.backend5.product.application.usecase.ProductUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
@@ -72,7 +71,7 @@ class ProductControllerTest {
         created.setRegDt(LocalDateTime.now());
         created.setModifyDt(LocalDateTime.now());
 
-        when(productUseCase.create(any(CreateProductInput.class))).thenReturn(created);
+        when(productUseCase.create(any(CreateProductRequest.class), any(UUID.class))).thenReturn(created);
 
         mockMvc.perform(post("/api/products")
                         .header("X-Actor-Id", actorId.toString())

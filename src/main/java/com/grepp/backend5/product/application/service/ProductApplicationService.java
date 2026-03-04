@@ -1,11 +1,11 @@
 package com.grepp.backend5.product.application.service;
 
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
-import com.grepp.backend5.product.application.input.CreateProductInput;
-import com.grepp.backend5.product.application.input.UpdateProductInput;
 import com.grepp.backend5.product.application.usecase.ProductUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.domain.repository.ProductRepository;
+import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
+import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,15 +24,15 @@ public class ProductApplicationService implements ProductUseCase {
 
     @Override
     @Transactional
-    public Product create(CreateProductInput input) {
+    public Product create(CreateProductRequest request, UUID actorId) {
         Product product = Product.create(
-                input.sellerId(),
-                input.name(),
-                input.description(),
-                input.price(),
-                input.stock(),
-                input.status(),
-                input.actorId()
+                request.sellerId(),
+                request.name(),
+                request.description(),
+                request.price(),
+                request.stock(),
+                request.status(),
+                actorId
         );
         return productRepository.save(product);
     }
@@ -49,15 +49,15 @@ public class ProductApplicationService implements ProductUseCase {
 
     @Override
     @Transactional
-    public Product update(UUID productId, UpdateProductInput input) {
+    public Product update(UUID productId, UpdateProductRequest request, UUID actorId) {
         Product product = findByIdOrThrow(productId);
         product.update(
-                input.name(),
-                input.description(),
-                input.price(),
-                input.stock(),
-                input.status(),
-                input.actorId()
+                request.name(),
+                request.description(),
+                request.price(),
+                request.stock(),
+                request.status(),
+                actorId
         );
         return product;
     }

@@ -1,7 +1,5 @@
 package com.grepp.backend5.product.presentation.controller;
 
-import com.grepp.backend5.product.application.input.CreateProductInput;
-import com.grepp.backend5.product.application.input.UpdateProductInput;
 import com.grepp.backend5.product.application.usecase.ProductUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
@@ -53,15 +51,7 @@ public class ProductController {
             @RequestHeader("X-Actor-Id") UUID actorId,
             @Valid @RequestBody CreateProductRequest request
     ) {
-        Product created = productUseCase.create(new CreateProductInput(
-                request.sellerId(),
-                request.name(),
-                request.description(),
-                request.price(),
-                request.stock(),
-                request.status(),
-                actorId
-        ));
+        Product created = productUseCase.create(request, actorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.from(created));
     }
 
@@ -99,14 +89,7 @@ public class ProductController {
             @Parameter(description = "요청자 UUID") @RequestHeader("X-Actor-Id") UUID actorId,
             @Valid @RequestBody UpdateProductRequest request
     ) {
-        Product updated = productUseCase.update(productId, new UpdateProductInput(
-                request.name(),
-                request.description(),
-                request.price(),
-                request.stock(),
-                request.status(),
-                actorId
-        ));
+        Product updated = productUseCase.update(productId, request, actorId);
         return ProductResponse.from(updated);
     }
 
