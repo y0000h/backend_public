@@ -1,19 +1,19 @@
-package com.grepp.backend5.product.infrastructure.persistence;
+package com.grepp.backend5.product.infrastructure.persistence.command;
 
 import com.grepp.backend5.product.domain.model.Product;
-import com.grepp.backend5.product.domain.repository.ProductRepository;
+import com.grepp.backend5.product.domain.repository.command.ProductCommandRepository;
+import com.grepp.backend5.product.infrastructure.persistence.ProductJpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class ProductRepositoryAdapter implements ProductRepository {
+public class ProductCommandRepositoryAdapter implements ProductCommandRepository {
 
     private final ProductJpaRepository productJpaRepository;
 
-    public ProductRepositoryAdapter(ProductJpaRepository productJpaRepository) {
+    public ProductCommandRepositoryAdapter(ProductJpaRepository productJpaRepository) {
         this.productJpaRepository = productJpaRepository;
     }
 
@@ -25,11 +25,6 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public Optional<Product> findById(UUID productId) {
         return productJpaRepository.findById(productId);
-    }
-
-    @Override
-    public List<Product> findAll() {
-        return productJpaRepository.findAll();
     }
 
     @Override

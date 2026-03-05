@@ -2,8 +2,9 @@ package com.grepp.backend5.product.presentation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grepp.backend5.common.exception.GlobalExceptionHandler;
+import com.grepp.backend5.product.application.command.usecase.ProductCommandUseCase;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
-import com.grepp.backend5.product.application.usecase.ProductUseCase;
+import com.grepp.backend5.product.application.query.usecase.ProductQueryUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,13 +31,15 @@ class ProductControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
-    private ProductUseCase productUseCase;
+    private ProductCommandUseCase productCommandUseCase;
+    private ProductQueryUseCase productQueryUseCase;
 
     @BeforeEach
     void setUp() {
-        productUseCase = mock(ProductUseCase.class);
+        productCommandUseCase = mock(ProductCommandUseCase.class);
+        productQueryUseCase = mock(ProductQueryUseCase.class);
 
-        ProductController productController = new ProductController(productUseCase);
+        ProductController productController = new ProductController(productCommandUseCase, productQueryUseCase);
 
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
@@ -71,7 +74,7 @@ class ProductControllerTest {
         created.setRegDt(LocalDateTime.now());
         created.setModifyDt(LocalDateTime.now());
 
-        when(productUseCase.create(any(CreateProductRequest.class), any(UUID.class))).thenReturn(created);
+        when(productCommandUseCase.create(any(CreateProductRequest.class), any(UUID.class))).thenReturn(created);
 
         mockMvc.perform(post("/api/products")
                         .header("X-Actor-Id", actorId.toString())
@@ -146,7 +149,7 @@ class ProductControllerTest {
     @Test
     void getByIdReturnsNotFoundWithStandardErrorBody() throws Exception {
         UUID productId = UUID.randomUUID();
-        when(productUseCase.getById(productId)).thenThrow(new ProductNotFoundException(productId));
+        when(productQueryUseCase.getById(productId)).thenThrow(new ProductNotFoundException(productId));
 
         mockMvc.perform(get("/api/products/{productId}", productId))
                 .andExpect(status().isNotFound())

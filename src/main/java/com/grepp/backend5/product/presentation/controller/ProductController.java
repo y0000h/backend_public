@@ -1,6 +1,7 @@
 package com.grepp.backend5.product.presentation.controller;
 
-import com.grepp.backend5.product.application.usecase.ProductUseCase;
+import com.grepp.backend5.product.application.command.usecase.ProductCommandUseCase;
+import com.grepp.backend5.product.application.query.usecase.ProductQueryUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
 import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
@@ -33,10 +34,13 @@ import java.util.UUID;
 @Tag(name = "Product", description = "상품 CRUD API")
 public class ProductController {
 
-    private final ProductUseCase productUseCase;
+    private final ProductCommandUseCase productCommandUseCase;
+    private final ProductQueryUseCase productQueryUseCase;
 
-    public ProductController(ProductUseCase productUseCase) {
-        this.productUseCase = productUseCase;
+    public ProductController(ProductCommandUseCase productCommandUseCase,
+                             ProductQueryUseCase productQueryUseCase) {
+        this.productCommandUseCase = productCommandUseCase;
+        this.productQueryUseCase = productQueryUseCase;
     }
 
     @PostMapping
@@ -51,7 +55,7 @@ public class ProductController {
             @RequestHeader("X-Actor-Id") UUID actorId,
             @Valid @RequestBody CreateProductRequest request
     ) {
-        Product created = productUseCase.create(request, actorId);
+        Product created = productCommandUseCase.create(request, actorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.from(created));
     }
 
@@ -63,7 +67,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
     public ProductResponse getById(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
-        return ProductResponse.from(productUseCase.getById(productId));
+        return ProductResponse.from(productQueryUseCase.getById(productId));
     }
 
     @GetMapping
@@ -72,7 +76,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     public List<ProductResponse> getAll() {
-        return productUseCase.getAll().stream()
+        return productQueryUseCase.getAll().stream()
                 .map(ProductResponse::from)
                 .toList();
     }
@@ -89,7 +93,7 @@ public class ProductController {
             @Parameter(description = "요청자 UUID") @RequestHeader("X-Actor-Id") UUID actorId,
             @Valid @RequestBody UpdateProductRequest request
     ) {
-        Product updated = productUseCase.update(productId, request, actorId);
+        Product updated = productCommandUseCase.update(productId, request, actorId);
         return ProductResponse.from(updated);
     }
 
@@ -100,7 +104,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "상품 없음")
     })
     public ResponseEntity<Void> delete(@Parameter(description = "상품 UUID") @PathVariable UUID productId) {
-        productUseCase.delete(productId);
+        productCommandUseCase.delete(productId);
         return ResponseEntity.noContent().build();
     }
 }

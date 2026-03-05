@@ -1,4 +1,4 @@
-package com.grepp.backend5.product.domain.repository;
+package com.grepp.backend5.product.domain.repository.query;
 
 import com.grepp.backend5.product.domain.model.Product;
 
@@ -6,13 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ProductRepository {
-
-    Product save(Product product);
+public interface ProductQueryRepository {
 
     Optional<Product> findById(UUID productId);
 
     List<Product> findAll();
-
-    void delete(Product product);
 }

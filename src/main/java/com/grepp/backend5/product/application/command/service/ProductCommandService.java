@@ -1,25 +1,24 @@
-package com.grepp.backend5.product.application.service;
+package com.grepp.backend5.product.application.command.service;
 
+import com.grepp.backend5.product.application.command.usecase.ProductCommandUseCase;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
-import com.grepp.backend5.product.application.usecase.ProductUseCase;
 import com.grepp.backend5.product.domain.model.Product;
-import com.grepp.backend5.product.domain.repository.ProductRepository;
+import com.grepp.backend5.product.domain.repository.command.ProductCommandRepository;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
 import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
-public class ProductApplicationService implements ProductUseCase {
+public class ProductCommandService implements ProductCommandUseCase {
 
-    private final ProductRepository productRepository;
+    private final ProductCommandRepository productCommandRepository;
 
-    public ProductApplicationService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductCommandService(ProductCommandRepository productCommandRepository) {
+        this.productCommandRepository = productCommandRepository;
     }
 
     @Override
@@ -34,17 +33,7 @@ public class ProductApplicationService implements ProductUseCase {
                 request.status(),
                 actorId
         );
-        return productRepository.save(product);
-    }
-
-    @Override
-    public Product getById(UUID productId) {
-        return findByIdOrThrow(productId);
-    }
-
-    @Override
-    public List<Product> getAll() {
-        return productRepository.findAll();
+        return productCommandRepository.save(product);
     }
 
     @Override
@@ -66,11 +55,11 @@ public class ProductApplicationService implements ProductUseCase {
     @Transactional
     public void delete(UUID productId) {
         Product product = findByIdOrThrow(productId);
-        productRepository.delete(product);
+        productCommandRepository.delete(product);
     }
 
     private Product findByIdOrThrow(UUID productId) {
-        return productRepository.findById(productId)
+        return productCommandRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
     }
 }
