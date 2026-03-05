@@ -1,8 +1,11 @@
-package com.grepp.backend5.product.application.command.service;
+package com.grepp.backend5.product.application.service;
 
+import com.grepp.backend5.product.application.event.ProductCreatedEvent;
+import com.grepp.backend5.product.application.event.ProductDeletedEvent;
+import com.grepp.backend5.product.application.event.ProductUpdatedEvent;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
 import com.grepp.backend5.product.domain.model.Product;
-import com.grepp.backend5.product.domain.repository.command.ProductCommandRepository;
+import com.grepp.backend5.product.domain.repository.ProductRepository;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
 import com.grepp.backend5.product.presentation.dto.request.UpdateProductRequest;
 import org.junit.jupiter.api.Test;
@@ -10,8 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,13 +27,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductCommandServiceTest {
+class ProductApplicationServiceTest {
 
     @Mock
-    private ProductCommandRepository productCommandRepository;
+    private ProductRepository productRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private ProductCommandService productCommandService;
+    private ProductApplicationService productApplicationService;
 
     @Test
     void createSetsActorIdToRegIdAndModifyId() {
@@ -43,13 +51,43 @@ class ProductCommandServiceTest {
                 "ACTIVE"
         );
 
-        when(productCommandRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product created = productCommandService.create(request, actorId);
+        Product created = productApplicationService.create(request, actorId);
 
         assertThat(created.getRegId()).isEqualTo(actorId);
         assertThat(created.getModifyId()).isEqualTo(actorId);
-        verify(productCommandRepository).save(any(Product.class));
+        verify(productRepository).save(any(Product.class));
+        verify(applicationEventPublisher).publishEvent(any(ProductCreatedEvent.class));
+    }
+
+    @Test
+    void getAllReturnsProducts() {
+        Product p1 = Product.create(
+                UUID.randomUUID(),
+                "Product1",
+                null,
+                new BigDecimal("100.00"),
+                1,
+                "ACTIVE",
+                UUID.randomUUID()
+        );
+        Product p2 = Product.create(
+                UUID.randomUUID(),
+                "Product2",
+                null,
+                new BigDecimal("200.00"),
+                2,
+                "ACTIVE",
+                UUID.randomUUID()
+        );
+
+        when(productRepository.findAll()).thenReturn(List.of(p1, p2));
+
+        List<Product> result = productApplicationService.getAll();
+
+        assertThat(result).hasSize(2);
+        verify(productRepository).findAll();
     }
 
     @Test
@@ -76,15 +114,16 @@ class ProductCommandServiceTest {
                 "ACTIVE"
         );
 
-        when(productCommandRepository.findById(productId)).thenReturn(Optional.of(existing));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existing));
 
-        Product updated = productCommandService.update(productId, request, actorId);
+        Product updated = productApplicationService.update(productId, request, actorId);
 
         assertThat(updated.getName()).isEqualTo("New Product");
         assertThat(updated.getDescription()).isEqualTo("New");
         assertThat(updated.getPrice()).isEqualByComparingTo("300.00");
         assertThat(updated.getStock()).isEqualTo(5);
         assertThat(updated.getModifyId()).isEqualTo(actorId);
+        verify(applicationEventPublisher).publishEvent(any(ProductUpdatedEvent.class));
     }
 
     @Test
@@ -101,28 +140,20 @@ class ProductCommandServiceTest {
         );
         existing.setId(productId);
 
-        when(productCommandRepository.findById(productId)).thenReturn(Optional.of(existing));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existing));
 
-        productCommandService.delete(productId);
+        productApplicationService.delete(productId);
 
-        verify(productCommandRepository).delete(existing);
+        verify(productRepository).delete(existing);
+        verify(applicationEventPublisher).publishEvent(any(ProductDeletedEvent.class));
     }
 
     @Test
-    void updateThrowsWhenProductDoesNotExist() {
+    void getByIdThrowsWhenProductDoesNotExist() {
         UUID productId = UUID.randomUUID();
-        UUID actorId = UUID.randomUUID();
-        UpdateProductRequest request = new UpdateProductRequest(
-                "New Product",
-                "New",
-                new BigDecimal("300.00"),
-                5,
-                "ACTIVE"
-        );
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
-        when(productCommandRepository.findById(productId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> productCommandService.update(productId, request, actorId))
+        assertThatThrownBy(() -> productApplicationService.getById(productId))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining(productId.toString());
     }
