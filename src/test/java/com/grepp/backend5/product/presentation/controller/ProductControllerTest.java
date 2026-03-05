@@ -3,6 +3,7 @@ package com.grepp.backend5.product.presentation.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grepp.backend5.common.exception.GlobalExceptionHandler;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
+import com.grepp.backend5.product.application.exception.SellerNotFoundException;
 import com.grepp.backend5.product.application.usecase.ProductUseCase;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.presentation.dto.request.CreateProductRequest;
@@ -154,5 +155,29 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message", containsString(productId.toString())))
                 .andExpect(jsonPath("$.path").value("/api/products/" + productId));
+    }
+
+    @Test
+    void createReturnsNotFoundWhenSellerDoesNotExist() throws Exception {
+        UUID actorId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+        CreateProductRequest request = new CreateProductRequest(
+                sellerId,
+                "Macbook Pro 14",
+                "M3 chip",
+                new BigDecimal("2590000.00"),
+                10,
+                "ACTIVE"
+        );
+        when(productUseCase.create(any(CreateProductRequest.class), any(UUID.class)))
+                .thenThrow(new SellerNotFoundException(sellerId));
+
+        mockMvc.perform(post("/api/products")
+                        .header("X-Actor-Id", actorId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message", containsString(sellerId.toString())));
     }
 }

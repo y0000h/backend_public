@@ -1,6 +1,8 @@
 package com.grepp.backend5.common.exception;
 
+import com.grepp.backend5.product.application.exception.InactiveSellerException;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
+import com.grepp.backend5.product.application.exception.SellerNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleProductNotFound(ProductNotFoundException ex,
                                                                HttpServletRequest request) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(SellerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSellerNotFound(SellerNotFoundException ex,
+                                                              HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(InactiveSellerException.class)
+    public ResponseEntity<ErrorResponse> handleInactiveSeller(InactiveSellerException ex,
+                                                              HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

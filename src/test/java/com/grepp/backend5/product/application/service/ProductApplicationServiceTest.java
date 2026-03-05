@@ -1,8 +1,8 @@
 package com.grepp.backend5.product.application.service;
 
-import com.grepp.backend5.product.application.event.ProductCreatedEvent;
-import com.grepp.backend5.product.application.event.ProductDeletedEvent;
-import com.grepp.backend5.product.application.event.ProductUpdatedEvent;
+import com.grepp.backend5.product.application.acl.SellerAcl;
+import com.grepp.backend5.product.application.acl.SellerIdentity;
+import com.grepp.backend5.product.application.exception.SellerNotFoundException;
 import com.grepp.backend5.product.application.exception.ProductNotFoundException;
 import com.grepp.backend5.product.domain.model.Product;
 import com.grepp.backend5.product.domain.repository.ProductRepository;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -33,7 +32,7 @@ class ProductApplicationServiceTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ApplicationEventPublisher applicationEventPublisher;
+    private SellerAcl sellerAcl;
 
     @InjectMocks
     private ProductApplicationService productApplicationService;
@@ -50,6 +49,8 @@ class ProductApplicationServiceTest {
                 10,
                 "ACTIVE"
         );
+        when(sellerAcl.loadActiveSeller(request.sellerId()))
+                .thenReturn(new SellerIdentity(request.sellerId()));
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -57,8 +58,28 @@ class ProductApplicationServiceTest {
 
         assertThat(created.getRegId()).isEqualTo(actorId);
         assertThat(created.getModifyId()).isEqualTo(actorId);
+        verify(sellerAcl).loadActiveSeller(request.sellerId());
         verify(productRepository).save(any(Product.class));
-        verify(applicationEventPublisher).publishEvent(any(ProductCreatedEvent.class));
+    }
+
+    @Test
+    void createThrowsWhenSellerDoesNotExist() {
+        UUID actorId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        CreateProductRequest request = new CreateProductRequest(
+                sellerId,
+                "Macbook Pro 14",
+                "M3 chip",
+                new BigDecimal("2590000.00"),
+                10,
+                "ACTIVE"
+        );
+        when(sellerAcl.loadActiveSeller(sellerId)).thenThrow(new SellerNotFoundException(sellerId));
+
+        assertThatThrownBy(() -> productApplicationService.create(request, actorId))
+                .isInstanceOf(SellerNotFoundException.class)
+                .hasMessageContaining(sellerId.toString());
     }
 
     @Test
@@ -123,7 +144,6 @@ class ProductApplicationServiceTest {
         assertThat(updated.getPrice()).isEqualByComparingTo("300.00");
         assertThat(updated.getStock()).isEqualTo(5);
         assertThat(updated.getModifyId()).isEqualTo(actorId);
-        verify(applicationEventPublisher).publishEvent(any(ProductUpdatedEvent.class));
     }
 
     @Test
@@ -145,7 +165,6 @@ class ProductApplicationServiceTest {
         productApplicationService.delete(productId);
 
         verify(productRepository).delete(existing);
-        verify(applicationEventPublisher).publishEvent(any(ProductDeletedEvent.class));
     }
 
     @Test
