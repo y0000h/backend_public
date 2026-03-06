@@ -34,7 +34,7 @@ ACL을 두면 외부 변경은 ACL 내부에서만 처리하면 됩니다.
 
 ### 실제 클래스 위치
 - ACL 포트(내부 인터페이스)
-  - `src/main/java/com/grepp/backend5/product/application/acl/SellerAcl.java`
+  - `src/main/java/com//greppbackend5/product/application/acl/SellerAcl.java`
 - 내부 모델
   - `src/main/java/com/grepp/backend5/product/application/acl/SellerIdentity.java`
 - ACL 어댑터(번역기)
