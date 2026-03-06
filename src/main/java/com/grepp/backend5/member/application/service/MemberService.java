@@ -7,14 +7,20 @@ import com.grepp.backend5.member.presentation.dto.req.MemberReq;
 import com.grepp.backend5.member.presentation.dto.res.MemberAdmRes;
 import com.grepp.backend5.member.presentation.dto.res.MemberRes;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService implements MemberUseCase {
     public final MemberRepository memberRepository;
     @Override
@@ -31,8 +37,18 @@ public class MemberService implements MemberUseCase {
     @Override
     public MemberRes save(MemberReq memberReq) {
         if(!memberRepository.findByPhone(memberReq.phone())){
-            Member member = memberRepository.save(Member.create(memberReq.email(), memberReq.name(), memberReq.address(),
-                    memberReq.status(), memberReq.password(), memberReq.phone()));
+
+            SecureRandom random = new SecureRandom();
+            byte[] saltkey = random.generateSeed(8);
+
+            Member member =Member.create(memberReq.email(), memberReq.name(), memberReq.address(),
+                    memberReq.status(), memberReq.password(), memberReq.phone());
+            member.setSaltKey(Base64.getEncoder().encodeToString(saltkey));
+            log.info("saltkey : {}", member.getSaltKey());
+            PasswordEncoder encoder = new BCryptPasswordEncoder();
+            member.setPassword(encoder.encode(memberReq.password()+member.getSaltKey()));
+
+            memberRepository.save(member);
             return new MemberRes(
                     member.getId(), member.getName(), member.getAddress());
         }else{
