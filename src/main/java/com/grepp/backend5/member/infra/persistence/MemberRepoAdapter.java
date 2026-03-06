@@ -27,4 +27,9 @@ public class MemberRepoAdapter implements MemberRepository {
     public boolean findByPhone(String phone) {
         return memberJpaRepository.findByPhone(phone).isPresent();
     }
+
+    @Override
+    public Member findByEmail(String email) {
+        return memberJpaRepository.findByEmail(email).orElseThrow();
+    }
 }

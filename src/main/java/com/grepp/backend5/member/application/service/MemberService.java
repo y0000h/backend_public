@@ -3,6 +3,7 @@ package com.grepp.backend5.member.application.service;
 import com.grepp.backend5.member.application.usecase.MemberUseCase;
 import com.grepp.backend5.member.domain.model.Member;
 import com.grepp.backend5.member.domain.repository.MemberRepository;
+import com.grepp.backend5.member.presentation.dto.req.Login;
 import com.grepp.backend5.member.presentation.dto.req.MemberReq;
 import com.grepp.backend5.member.presentation.dto.res.MemberAdmRes;
 import com.grepp.backend5.member.presentation.dto.res.MemberRes;
@@ -23,6 +24,7 @@ import java.util.List;
 @Slf4j
 public class MemberService implements MemberUseCase {
     public final MemberRepository memberRepository;
+    private final PasswordEncoder encoder = new BCryptPasswordEncoder();
     @Override
     public List<MemberRes> findAll() {
         return memberRepository.findAll().stream().map(this::changeMemberResType).toList();
@@ -45,7 +47,6 @@ public class MemberService implements MemberUseCase {
                     memberReq.status(), memberReq.password(), memberReq.phone());
             member.setSaltKey(Base64.getEncoder().encodeToString(saltkey));
             log.info("saltkey : {}", member.getSaltKey());
-            PasswordEncoder encoder = new BCryptPasswordEncoder();
             member.setPassword(encoder.encode(memberReq.password()+member.getSaltKey()));
 
             memberRepository.save(member);
@@ -55,6 +56,15 @@ public class MemberService implements MemberUseCase {
             //TODO: throw
         }
         return null;
+    }
+
+    @Override
+    public Boolean login(Login login) {
+        Member member = memberRepository.findByEmail(login.email());
+        if(encoder.matches(login.password()+member.getSaltKey(), member.getPassword())){
+            return true;
+        }
+        return false;
     }
 
     private MemberRes changeMemberResType(Member member){

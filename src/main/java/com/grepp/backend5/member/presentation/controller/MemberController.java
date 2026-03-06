@@ -1,6 +1,7 @@
 package com.grepp.backend5.member.presentation.controller;
 
 import com.grepp.backend5.member.application.usecase.MemberUseCase;
+import com.grepp.backend5.member.presentation.dto.req.Login;
 import com.grepp.backend5.member.presentation.dto.req.MemberReq;
 import com.grepp.backend5.member.presentation.dto.res.MemberAdmRes;
 import com.grepp.backend5.member.presentation.dto.res.MemberRes;
@@ -31,4 +32,8 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(memberUseCase.save(memberReq));
     }
 
+    @PostMapping("login")
+    public ResponseEntity<Boolean> login(@RequestBody Login login){
+        return ResponseEntity.status(HttpStatus.OK).body(memberUseCase.login(login));
+    }
 }
