@@ -6,20 +6,18 @@ import com.grepp.backend5.product.application.exception.InactiveSellerException;
 import com.grepp.backend5.product.application.exception.SellerNotFoundException;
 import com.grepp.backend5.product.infrastructure.acl.client.ExternalSellerClient;
 import com.grepp.backend5.product.infrastructure.acl.client.ExternalSellerPayload;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class SellerAclAdapter implements SellerAcl {
 
     private static final String ACTIVE_STATUS = "ACTIVE";
 
     private final ExternalSellerClient externalSellerClient;
-
-    public SellerAclAdapter(ExternalSellerClient externalSellerClient) {
-        this.externalSellerClient = externalSellerClient;
-    }
 
     @Override
     public SellerIdentity loadActiveSeller(UUID sellerId) {

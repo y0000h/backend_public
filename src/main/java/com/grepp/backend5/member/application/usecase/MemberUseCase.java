@@ -1,0 +1,14 @@
+package com.grepp.backend5.member.application.usecase;
+
+import com.grepp.backend5.member.presentation.dto.req.MemberReq;
+import com.grepp.backend5.member.presentation.dto.res.MemberAdmRes;
+import com.grepp.backend5.member.presentation.dto.res.MemberRes;
+
+import java.util.List;
+
+public interface MemberUseCase {
+    List<MemberRes> findAll();
+    List<MemberAdmRes> findAdmAll();
+
+    MemberRes save(MemberReq memberReq);
+}
